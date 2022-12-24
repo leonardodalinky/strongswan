@@ -172,7 +172,7 @@ METHOD(private_key_t, sign, bool,
 			return build_der_signature(this, NID_sha512, data, signature);
 		case SIGN_SM2_WITH_SM3:
 			return build_curve_signature(this, scheme, NID_sm3,
-										 NID_sm2p256v1, data, signature);
+										 NID_sm2, data, signature);
 		case SIGN_ECDSA_256:
 			return build_curve_signature(this, scheme, NID_sha256,
 										 NID_X9_62_prime256v1, data, signature);
@@ -372,7 +372,7 @@ openssl_ec_private_key_t *openssl_ec_private_key_gen(key_type_t type,
 	switch (type)
 	{
 		case KEY_SM2:{
-			this->ec = EC_KEY_new_by_curve_name(NID_sm2p256v1);
+			this->ec = EC_KEY_new_by_curve_name(NID_sm2);
 		}break;
 		case KEY_ECDSA:
 		switch (key_size)

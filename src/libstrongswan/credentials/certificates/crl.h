@@ -30,7 +30,7 @@ typedef enum crl_reason_t crl_reason_t;
 
 /* <wincrypt.h> comes with CRL_REASON clashing with ours. Even if the values
  * are identical, we undef them here to use our enum instead of defines. */
-#ifdef WIN32
+#ifdef CRL_REASON_UNSPECIFIED
 # undef CRL_REASON_UNSPECIFIED
 # undef CRL_REASON_KEY_COMPROMISE
 # undef CRL_REASON_CA_COMPROMISE
