@@ -14,14 +14,8 @@
  */
 
 #include <gmalg.h>
-#include <sm2.h>
-#include <ecc.h>
-
-#include <gmssl/sm3.h>
 
 #include "gmalg_hasher.h"
-
-extern struct ecc_curve ecc_curve;
 
 typedef struct private_gmalg_hasher_t private_gmalg_hasher_t;
 
@@ -40,7 +34,11 @@ struct private_gmalg_hasher_t {
 	 */
 	hash_algorithm_t algo;
 
-	SM3_CTX *ctx;
+	/*
+	 * the cipher device handle
+	 */
+	void *hDeviceHandle;
+
 };
 
 METHOD(hasher_t, get_hash_size, size_t,
@@ -54,7 +52,7 @@ METHOD(hasher_t, reset, bool,
 {
 	bool rc = TRUE;
 
-	GMSSL_HashInit(this->ctx, NULL, NULL, 0);
+	GMALG_HashInit(this->hDeviceHandle, NULL, NULL, 0);
 
 	return rc;
 }
@@ -62,13 +60,13 @@ METHOD(hasher_t, reset, bool,
 METHOD(hasher_t, get_hash, bool,
 	private_gmalg_hasher_t *this, chunk_t chunk, uint8_t *hash)
 {
-	GMSSL_HashUpdate(this->ctx, chunk.ptr, chunk.len);
+	GMALG_HashUpdate(this->hDeviceHandle, chunk.ptr, chunk.len);
 
 	if (hash)
 	{
 		u_int len;
-		GMSSL_HashFinal(this->ctx, hash, &len);
-		GMSSL_HashInit(this->ctx, NULL, NULL, 0);
+		GMALG_HashFinal(this->hDeviceHandle, hash, &len);
+		GMALG_HashInit(this->hDeviceHandle, NULL, NULL, 0);
 	}
 	return TRUE;
 }
@@ -87,7 +85,7 @@ METHOD(hasher_t, allocate_hash, bool,
 METHOD(hasher_t, destroy, void,
 	private_gmalg_hasher_t *this)
 {
-	free(this->ctx);
+	GMALG_CloseDevice(this->hDeviceHandle);
 	free(this);
 }
 
@@ -111,8 +109,8 @@ gmalg_hasher_t *gmalg_hasher_create(hash_algorithm_t algo)
 	);
 
 	this->algo = algo;
-	this->ctx = (SM3_CTX*)malloc(sizeof(SM3_CTX));
-	GMSSL_HashInit(this->ctx, NULL, NULL, 0);
+	GMALG_OpenDevice(&this->hDeviceHandle);
+	GMALG_HashInit(this->hDeviceHandle, NULL, NULL, 0);
 
 	return &this->public;
 }
@@ -134,72 +132,8 @@ gmalg_hasher_t *gmalg_hasher_create_ecc(hash_algorithm_t algo, ECCrefPublicKey *
 	);
 
 	this->algo = algo;
-	this->ctx = (SM3_CTX*)malloc(sizeof(SM3_CTX));
-	GMSSL_HashInit(this->ctx, pub_key, id.ptr, id.len);
+	GMALG_OpenDevice(&this->hDeviceHandle);
+	GMALG_HashInit(this->hDeviceHandle, pub_key, id.ptr, id.len);
 
 	return &this->public;
-}
-
-void GMSSL_sm3_z(uint8_t *id, uint32_t idlen, ecc_point *pub, u8 *hash)
-{
-	uint8_t a[ECC_NUMWORD];
-	uint8_t b[ECC_NUMWORD];
-	uint8_t x[ECC_NUMWORD];
-	uint8_t y[ECC_NUMWORD];
-	uint8_t idlen_char[2];
-	SM3_CTX md;
-
-	digit2str16(idlen<<3, idlen_char);
-
-	ecc_bytes2native(a, ecc_curve.a);
-	ecc_bytes2native(b, ecc_curve.b);
-	ecc_bytes2native(x, ecc_curve.g.x);
-	ecc_bytes2native(y, ecc_curve.g.y);
-
-	sm3_init(&md);
-	sm3_update(&md, idlen_char, 2);
-	sm3_update(&md, id, idlen);
-	sm3_update(&md, a, ECC_NUMWORD);
-	sm3_update(&md, b, ECC_NUMWORD);
-	sm3_update(&md, x, ECC_NUMWORD);
-	sm3_update(&md, y, ECC_NUMWORD);
-	sm3_update(&md, pub->x, ECC_NUMWORD);
-	sm3_update(&md, pub->y, ECC_NUMWORD);
-	sm3_finish(&md, hash);
-}
-
-
-void GMSSL_HashInit(
-	SM3_CTX *ctx,
-	ECCrefPublicKey *pucPublicKey,
-	unsigned char *pucID,
-	unsigned int uiIDLength)
-{
-	uint8_t Z[ECC_NUMWORD];
-	int rc = 0;
-
-	if (uiIDLength) {
-		GMSSL_sm3_z(pucID, uiIDLength, pucPublicKey->x, Z);
-		sm3_update(ctx, Z, ECC_NUMWORD);
-	}
-}
-
-void GMSSL_HashUpdate (
-	SM3_CTX *ctx,
-	unsigned char *pucData,
-	unsigned int uiDataLength)
-
-{
-	sm3_update(ctx, pucData, uiDataLength);
-}
-
-int GMSSL_HashFinal (
-	SM3_CTX *ctx,
-	unsigned char *pucHash,
-	unsigned int *puiHashLength)
-
-{
-	sm3_finish(ctx, pucHash);
-	if (puiHashLength)
-		*puiHashLength =  32;
 }

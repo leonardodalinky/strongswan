@@ -5,12 +5,19 @@
 原项目的 [README](README_GM.md) 在此。
 
 ```
-git clone --depth 20
+git clone --depth 20 git@github.com:leonardodalinky/strongswan.git
 ```
 
 SM 国密算法直接使用 GmSSL 库的 v3.0.0 版本，详情请见 [GmSSL](https://github.com/guanzhi/GmSSL/tree/v3.0.0) 的库说明。
 
 ## 开发构建方式
+
+先确保库依赖已安装：
+```
+sudo apt update
+
+sudo apt install build-essential cmake libtool autoconf gettext libcurl4-openssl-dev libtss2-dev gperf libgmp-dev libssl-dev bison flex pkg-config
+```
 
 构建前，先安装子模块 `GmSSL`:
 ```bash

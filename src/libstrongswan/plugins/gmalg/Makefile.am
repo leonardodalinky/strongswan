@@ -27,3 +27,5 @@ libstrongswan_gmalg_la_SOURCES = \
 
 libstrongswan_gmalg_la_LDFLAGS = -module -avoid-version
 libstrongswan_gmalg_la_LIBADD  = $(GMALG_LIB)
+
+AM_LDFLAGS = -lgmssl
