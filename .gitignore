@@ -52,3 +52,10 @@ coverage/
 /*.files
 /*.includes
 test-driver
+
+# custom
+build/
+dev/
+tmp_*
+.vscode/
+.idea/

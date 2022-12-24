@@ -31,6 +31,10 @@
 #include <openssl/bn.h>
 #include <openssl/asn1.h>
 
+#ifndef NID_sm2p256v1
+#define NID_sm2p256v1 NID_sm2
+#endif
+
 /**
  * Returns the length in bytes of a field element
  */
