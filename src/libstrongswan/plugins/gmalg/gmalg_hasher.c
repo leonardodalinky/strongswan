@@ -52,11 +52,9 @@ METHOD(hasher_t, get_hash_size, size_t,
 METHOD(hasher_t, reset, bool,
 	private_gmalg_hasher_t *this)
 {
-	bool rc = TRUE;
-
 	GMSSL_HashInit(this->ctx, NULL, NULL, 0);
 
-	return rc;
+	return TRUE;
 }
 
 METHOD(hasher_t, get_hash, bool,
@@ -175,8 +173,8 @@ void GMSSL_HashInit(
 	unsigned char *pucID,
 	unsigned int uiIDLength)
 {
+	sm3_init(ctx);
 	uint8_t Z[ECC_NUMWORD];
-	int rc = 0;
 
 	if (uiIDLength) {
 		GMSSL_sm3_z(pucID, uiIDLength, pucPublicKey->x, Z);
