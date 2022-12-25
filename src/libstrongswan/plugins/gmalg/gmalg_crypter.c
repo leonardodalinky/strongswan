@@ -17,8 +17,6 @@
 
 #include <gmalg.h>
 
-#include <gmssl/sm4.h>
-
 typedef struct private_gmalg_crypter_t private_gmalg_crypter_t;
 
 /**
@@ -41,8 +39,10 @@ struct private_gmalg_crypter_t {
 	 */
 	encryption_algorithm_t algo;
 
-	SM4_KEY *key_enc;
-	SM4_KEY *key_dec;
+	/*
+	 * the cipher ddevice handle
+	 */
+	void *hDeviceHandle;
 };
 
 /**
@@ -86,9 +86,9 @@ static bool crypt(private_gmalg_crypter_t *this, chunk_t data, chunk_t iv,
 	}
 
 	if (enc)
-		rc = GMSSL_Encrypt(this->key_enc, alg_mode, iv.ptr, data.ptr, data.len, out, &len);
+		rc = GMALG_Encrypt(this->hDeviceHandle, this->key.ptr, alg_mode, iv.ptr, data.ptr, data.len, out, &len);
 	else
-		rc = GMSSL_Decrypt(this->key_dec, alg_mode, iv.ptr, data.ptr, data.len, out, &len);
+		rc = GMALG_Decrypt(this->hDeviceHandle, this->key.ptr, alg_mode, iv.ptr, data.ptr, data.len, out, &len);
 	if(rc)
 		success = FALSE;
 
@@ -110,13 +110,13 @@ METHOD(crypter_t, encrypt, bool,
 METHOD(crypter_t, get_block_size, size_t,
 	private_gmalg_crypter_t *this)
 {
-	return SM4_BLOCK_SIZE;
+	return 16;
 }
 
 METHOD(crypter_t, get_iv_size, size_t,
 	private_gmalg_crypter_t *this)
 {
-	return SM4_BLOCK_SIZE;
+	return 16;
 }
 
 METHOD(crypter_t, get_key_size, size_t,
@@ -129,16 +129,13 @@ METHOD(crypter_t, set_key, bool,
 	private_gmalg_crypter_t *this, chunk_t key)
 {
 	memcpy(this->key.ptr, key.ptr, min(key.len, this->key.len));
-	sm4_set_encrypt_key(this->key_enc, this->key.ptr);
-	sm4_set_decrypt_key(this->key_dec, this->key.ptr);
 	return TRUE;
 }
 
 METHOD(crypter_t, destroy, void,
 	private_gmalg_crypter_t *this)
 {
-	free(this->key_enc);
-	free(this->key_dec);
+	GMALG_CloseDevice(this->hDeviceHandle);
 	chunk_clear(&this->key);
 	free(this);
 }
@@ -166,104 +163,8 @@ gmalg_crypter_t *gmalg_crypter_create(encryption_algorithm_t algo,
 	);
 
 	this->algo = algo;
-	if (key_size != SM4_KEY_SIZE) {
-		DBG1(DBG_LIB, "invalid sm4 key size: %d", key_size);
-		return NULL;
-	}
 	this->key = chunk_alloc(key_size);
-	this->key_enc = (SM4_KEY *)malloc(sizeof(SM4_KEY));
-	this->key_dec = (SM4_KEY *)malloc(sizeof(SM4_KEY));
-	set_key(this, this->key);
+	GMALG_OpenDevice(&this->hDeviceHandle);
 
 	return &this->public;
-}
-
-void GMSSL_sm4_ecb_encrypt(SM4_KEY *key, uint8_t *in, uint32_t len, uint8_t *out)
-{
-	while(len > 0) {
-		sm4_encrypt(key, in, out);
-		in  += SM4_BLOCK_SIZE;
-		out += SM4_BLOCK_SIZE;
-		len -= SM4_BLOCK_SIZE;
-	}
-}
-
-#define GMSSL_sm4_ecb_decrypt GMSSL_sm4_ecb_encrypt
-
-int GMSSL_Encrypt(
-	SM4_KEY* key,
-	unsigned int uiAlgID,
-	unsigned char *pucIV,
-	unsigned char *pucData,
-	unsigned int uiDataLength,
-	unsigned char *pucEncData,
-	unsigned int *puiEncDataLength)
-
-{
-	int rc = 0;
-
-	switch( uiAlgID){
-	case GMALG_SM1_ECB:{
-		GMSSL_sm4_ecb_encrypt(key, pucData, uiDataLength, pucEncData);
-		if(puiEncDataLength)
-			*puiEncDataLength = uiDataLength;
-	}break;
-	case GMALG_SM1_CBC:{
-		sm4_cbc_encrypt(key, pucIV, pucData, uiDataLength / SM4_BLOCK_SIZE, pucEncData);
-		if(puiEncDataLength)
-			*puiEncDataLength = uiDataLength;
-	}break;
-	case GMALG_SM4_ECB:{
-		GMSSL_sm4_ecb_encrypt(key, pucData, uiDataLength, pucEncData);
-		if(puiEncDataLength)
-			*puiEncDataLength = uiDataLength;
-	}break;
-	case GMALG_SM4_CBC:{
-		sm4_cbc_encrypt(key, pucIV, pucData, uiDataLength / SM4_BLOCK_SIZE, pucEncData);
-		if(puiEncDataLength)
-			*puiEncDataLength = uiDataLength;
-	}break;
-	default:{ rc = -1;}
-	}
-
-	return rc;
-}
-
-int GMSSL_Decrypt (
-	SM4_KEY* key,
-	unsigned int uiAlgID,
-	unsigned char *pucIV,
-	unsigned char *pucEncData,
-	unsigned int uiEncDataLength,
-	unsigned char *pucData,
-	unsigned int *puiDataLength)
-
-{
-	int rc = 0;
-
-	switch( uiAlgID){
-	case GMALG_SM1_ECB:{
-		GMSSL_sm4_ecb_decrypt(key, pucEncData, uiEncDataLength, pucData);
-		if(puiDataLength)
-			*puiDataLength = uiEncDataLength;
-	}break;
-	case GMALG_SM1_CBC:{
-		sm4_cbc_decrypt(key, pucIV, pucEncData, uiEncDataLength / SM4_BLOCK_SIZE, pucData);
-		if(puiDataLength)
-			*puiDataLength = uiEncDataLength;
-	}break;
-	case GMALG_SM4_ECB:{
-		GMSSL_sm4_ecb_decrypt(key, pucEncData, uiEncDataLength, pucData);
-		if(puiDataLength)
-			*puiDataLength = uiEncDataLength;
-	}break;
-	case GMALG_SM4_CBC:{
-		sm4_cbc_decrypt(key, pucIV, pucEncData, uiEncDataLength / SM4_BLOCK_SIZE, pucData);
-		if(puiDataLength)
-			*puiDataLength = uiEncDataLength;
-	}break;
-	default:{ rc = -1;}
-	}
-
-	return rc;
 }
