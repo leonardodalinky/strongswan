@@ -151,7 +151,7 @@ static bool verify_der_signature(private_openssl_ec_public_key_t *this,
 METHOD(public_key_t, get_type, key_type_t,
 	private_openssl_ec_public_key_t *this)
 {
-	/** Modified by zhangke
+	/** Modified by SM改造小组
 	 * Orgin version
 	* return KEY_ECDSA;
 	*/

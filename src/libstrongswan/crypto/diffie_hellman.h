@@ -67,7 +67,7 @@ enum diffie_hellman_group_t {
 	 * CURVE_448     = 32,
 	 */
 
-	/** Added by zhangke */
+	/** Added by SM改造小组 */
 	CURVE_SM2     = 32,
 	CURVE_448     = 33,
 

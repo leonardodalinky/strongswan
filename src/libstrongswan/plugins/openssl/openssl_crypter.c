@@ -187,7 +187,7 @@ openssl_crypter_t *openssl_crypter_create(encryption_algorithm_t algo,
 
 	switch (algo)
 	{
-		/** Added by zhangke */
+		/** Added by SM改造小组 */
 		case ENCR_SM1_ECB:
 			//this->cipher = EVP_get_cipherbyname("SM1-ECB");
 			this->cipher = EVP_get_cipherbyname("SMS4-ECB");
@@ -206,7 +206,7 @@ openssl_crypter_t *openssl_crypter_create(encryption_algorithm_t algo,
 			this->cipher = EVP_get_cipherbyname("SMS4-CBC");
 			key_size = 16;
 			break;
-		/** Added by zhangke EOF*/
+		/** Added by SM改造小组 EOF*/
 
 		case ENCR_NULL:
 			this->cipher = EVP_enc_null();

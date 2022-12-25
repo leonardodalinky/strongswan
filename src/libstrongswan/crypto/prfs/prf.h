@@ -51,7 +51,7 @@ enum pseudo_random_function_t {
 	/** RFC4868 */
 	PRF_HMAC_SHA2_512 = 7,
 
-	/** Added by zhangke */
+	/** Added by SM改造小组 */
 	PRF_HMAC_SM3 = 8,
 
 	/** RFC4615 */

@@ -92,7 +92,7 @@ enum auth_method_t {
 	/**
 	 * Digital Signature as specified in RFC 7427
 	 */
-	//Modified by zhangke
+	//Modified by SM改造小组
 	AUTH_DS = 15,
 
 	/**

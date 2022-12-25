@@ -367,7 +367,7 @@ static private_key_t *parse_private_key(chunk_t blob)
 		 *						  BUILD_BLOB_ASN1_DER, blob, BUILD_END);
 		 */
 		
-		/** Updated by zhangke */
+		/** Updated by SM改造小组 */
 		return lib->creds->create(lib->creds, CRED_PRIVATE_KEY, type,
 								  BUILD_BLOB_ASN1_DER, blob, BUILD_END);
 	}

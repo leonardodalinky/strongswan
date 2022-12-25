@@ -1166,7 +1166,7 @@ static bool parse_certificate(private_openssl_x509_t *this)
 		return FALSE;
 	}
 
-	/** This is suggested by zhangke
+	/** This is suggested by SM改造小组
 	 * 
 	 * this->notBefore = openssl_asn1_to_time(X509_getm_notBefore(this->x509));
 	 * this->notAfter = openssl_asn1_to_time(X509_getm_notAfter(this->x509));

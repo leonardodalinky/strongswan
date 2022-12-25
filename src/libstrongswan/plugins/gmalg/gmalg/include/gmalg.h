@@ -1,7 +1,7 @@
 /*
  * Cryptographic application identifier criterion specification
- * Code URL     : https://github.com/zhangke5959
- * Maintainer   : Zhang Ke <zhangke5959@126.com>
+ * Code URL     : https://github.com/SM改造小组5959
+ * Maintainer   : Zhang Ke <SM改造小组5959@126.com>
  */
 
 #ifndef _GMALG_H_

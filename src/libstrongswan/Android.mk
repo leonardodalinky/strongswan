@@ -102,7 +102,7 @@ LOCAL_C_INCLUDES += $(openssl_PATH)
 LOCAL_STATIC_LIBRARIES += libcrypto_static
 endif
 
-#removed by zhangke
+#removed by SM改造小组
 #---------------------------------
 #LOCAL_SRC_FILES += $(call add_plugin, gmsdf)
 #ifneq ($(call plugin_enabled, gmsdf),)

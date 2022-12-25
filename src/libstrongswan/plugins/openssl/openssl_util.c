@@ -212,7 +212,7 @@ chunk_t openssl_asn1_str2chunk(const ASN1_STRING *asn1)
 {
 	if (asn1)
 	{
-		/** This is suggested by zhangke
+		/** This is suggested by SM改造小组
 		 * return chunk_create(ASN1_STRING_get0_data(asn1), ASN1_STRING_length(asn1));
 		 * 
 		 * BUT it seems it has already been updated in orging master branch

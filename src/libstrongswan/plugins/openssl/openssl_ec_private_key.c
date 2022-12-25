@@ -55,7 +55,7 @@ struct private_openssl_ec_private_key_t {
 
 	/**
 	 *  key type
-	 *  Added by zhangke
+	 *  Added by SM改造小组
 	 */
 	key_type_t type;
 
@@ -209,7 +209,7 @@ METHOD(private_key_t, get_type, key_type_t,
 	private_openssl_ec_private_key_t *this)
 {
 
-	/** Modified by zhangke
+	/** Modified by SM改造小组
 	 *  orgin version
 	 * 
 	 * 	return KEY_ECDSA;
@@ -229,7 +229,7 @@ METHOD(private_key_t, get_public_key, public_key_t*,
 	p = key.ptr;
 	i2d_EC_PUBKEY(this->ec, &p);
 
-	/** Modified by zhangke
+	/** Modified by SM改造小组
 	 *  orgin version
 	 * 
 	 * 	public = lib->creds->create(lib->creds, CRED_PUBLIC_KEY, KEY_ECDSA,
